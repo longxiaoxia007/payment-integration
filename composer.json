@@ -1,0 +1,22 @@
+{
+    "name": "payment-integration",
+    "description": "a payment integration package",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "easy come easy go",
+            "email": "flj421718630@126.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.6.0",
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "PaymentIntegration\\": "src/"
+        }
+    }
+}
