@@ -9,6 +9,8 @@
 namespace PaymentIntegration\Wechat;
 
 
+use GuzzleHttp\Client;
+
 class JsApiPay
 {
     /**
@@ -21,9 +23,20 @@ class JsApiPay
      * 秘钥
      */
     protected $key;
+    /**
+     * @var string
+     * 下单url
+     */
+    protected $unifiedorder_url;
+    /**
+     * @var string
+     * 退款url
+     */
+    protected $refund_url;
     public function __construct()
     {
-
+        $this->unifiedorder_url = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
+        $this->refund_url = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
     }
 
     /**
@@ -46,18 +59,46 @@ class JsApiPay
 
     public function doPay()
     {
+        $this->params['sign'] = $this->createSign($this->params);
 
+        $utils = new Utils();
+        $xml = $utils->arrayToXml($this->params);
+
+        $http = new Client();
+        $response = $http->post($this->unifiedorder_url, [
+            'body' => $xml
+        ]);
+        $result = $utils->xmlToArray($response->getbody());
+
+        if($result['return_code'] !== 'SUCCESS') {
+            throw new \Exception($result['return_msg']);
+        }
+        if($result['result_code'] !== 'SUCCESS') {
+            throw new \Exception($result['err_code_des']);
+        }
+        $prepay_id    = (!isset($result['prepay_id']) || empty($result['prepay_id'])) ? $result['prepay_id'] : '';
+        $sign_array = [
+            'appId'     => $result['appid'],
+            'timeStamp' => strval(time()),
+            'nonceStr'  => $result['nonce_str'],
+            'package'   => 'prepay_id='.$prepay_id,
+            'signType'  => 'MD5',
+        ];
+        $paySign = $this->createSign($sign_array);
+        $sign_array['paySign'] = $paySign;
+        $sign_array['payment_id'] = $params['payment_id'];
+        return $sign_array;
     }
 
     /**
      * @return string
      * 创建签名字符串
      */
-    public function createSign()
+    public function createSign($params)
     {
-        ksort($this->params); //签名步骤一：按字典序排序参数
+        ksort($params); //签名步骤一：按字典序排序参数
         $buff = "";
-        foreach ($this->params as $k => $v)
+        foreach ($params as $k => $v)
         {
             if($k != "sign" && $v != "" && !is_array($v))
             {
