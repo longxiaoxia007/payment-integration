@@ -6,7 +6,7 @@
  * Time: 15:46
  */
 
-namespace PaymentIntegration\Wechat;
+namespace PaymentIntegration\Lib;
 
 class Utils
 {
@@ -35,5 +35,20 @@ class Utils
         //将XML转为array
         $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
         return $array_data;
+    }
+
+    /**
+     * @param int $length
+     * @return string
+     * 创建随机字符串
+     */
+    public function createNoncestr( $length = 16 )
+    {
+        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        $str ="";
+        for ( $i = 0; $i < $length; $i++ )  {
+            $str.= substr($chars, mt_rand(0, strlen($chars)-1), 1);
+        }
+        return $str;
     }
 }
