@@ -12,7 +12,7 @@ namespace PaymentIntegration\Wechat\Common;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Wechat\WechatMultiplePay;
 
-class WechatH5Pay extends WechatMultiplePay
+final class WechatH5Pay extends WechatMultiplePay
 {
     public function __construct()
     {
@@ -28,8 +28,7 @@ class WechatH5Pay extends WechatMultiplePay
     {
         $request_data = $this->payRequest($this->trade_type);
         if(empty($request_data['mweb_url'])) throw new MultiplePayException('支付跳转链接缺失');
-        header('Location:'. $request_data['mweb_url']);
-        exit;
+        return ['mweb_url' => $request_data['mweb_url']];
     }
 
     /**
@@ -50,5 +49,14 @@ class WechatH5Pay extends WechatMultiplePay
     public function doOrderQuery()
     {
         return $this->orderQueryRequest($this->trade_type);
+    }
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 退款查询
+     */
+    public function doRefundQuery()
+    {
+        return $this->refundQueryRequest($this->trade_type);
     }
 }

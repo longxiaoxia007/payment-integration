@@ -12,7 +12,7 @@ namespace PaymentIntegration\Wechat\Common;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Wechat\WechatMultipleServicePay;
 
-class WechatAppServicePay extends WechatMultipleServicePay
+final class WechatAppServicePay extends WechatMultipleServicePay
 {
     public function __construct()
     {
@@ -61,5 +61,15 @@ class WechatAppServicePay extends WechatMultipleServicePay
     public function doOrderQuery()
     {
         return $this->orderQueryRequest($this->trade_type);
+    }
+
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 退款查询
+     */
+    public function doRefundQuery()
+    {
+        return $this->refundQueryRequest($this->trade_type);
     }
 }

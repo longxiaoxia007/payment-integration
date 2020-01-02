@@ -76,6 +76,7 @@ class WechatPay
         $this->unifiedorder_url = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
         $this->order_query_url = 'https://api.mch.weixin.qq.com/pay/orderquery';
         $this->refund_url = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
+        $this->refund_query_url = 'https://api.mch.weixin.qq.com/pay/refundquery';
         $this->utils = new Utils();
     }
 
@@ -84,7 +85,7 @@ class WechatPay
      * @param $parameterValue
      * 设置支付参数
      */
-    public function setParams($param, $value)
+    public function setParam($param, $value)
     {
         $this->params[$param] = $value;
     }
@@ -213,16 +214,74 @@ class WechatPay
      */
     protected function refundRequest($trade_type)
     {
+        if(empty($this->cert_path) || empty($this->ssl_key_path)) throw new MultiplePayException('证书或者秘钥路径未配置');
+        if(!file_exists($this->cert_path)) throw new MultiplePayException('证书路径不存在');
+        if(!file_exists($this->ssl_key_path)) throw new MultiplePayException('证书秘钥路径不存在');
+
         MultipleValidate::check('wechat', 'refund',  $this->pay_model, $trade_type, $this->params);
         $this->setMustParams();
         $this->params['sign'] = $this->createSign($this->params);
 
         $xml = $this->utils->arrayToXml($this->params);
         $http = new Client();
-        $response = $http->post($this->unifiedorder_url, [
+        $response = $http->post($this->refund_url, [
             'verify' => true,
             'cert' => $this->cert_path,
             'ssl_key' => $this->ssl_key_path,
+            'body' => $xml
+        ]);
+        $result = $this->utils->xmlToArray($response->getbody());
+        if ($result['return_code'] !== 'SUCCESS') {
+            throw new MultiplePayException($result['return_msg']);
+        }
+        if ($result['result_code'] !== 'SUCCESS') {
+            throw new MultiplePayException($result['err_code'] . '：' . $result['err_code_des']);
+        }
+        return $result;
+    }
+
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 退款查询
+     */
+    protected function refundQueryRequest($trade_type)
+    {
+        MultipleValidate::check('wechat', 'query_refund',  $this->pay_model, $trade_type, $this->params);
+        $this->setMustParams();
+        $this->params['sign'] = $this->createSign($this->params);
+
+        $xml = $this->utils->arrayToXml($this->params);
+        $http = new Client();
+        $response = $http->post($this->refund_query_url, [
+            'body' => $xml
+        ]);
+        $result = $this->utils->xmlToArray($response->getbody());
+        if ($result['return_code'] !== 'SUCCESS') {
+            throw new MultiplePayException($result['return_msg']);
+        }
+        if ($result['result_code'] !== 'SUCCESS') {
+            throw new MultiplePayException($result['err_code'] . '：' . $result['err_code_des']);
+        }
+        return $result;
+    }
+
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 转化短链接
+     */
+    protected function shortUrlRequest($long_url)
+    {
+        $request_params['long_url'] = $long_url;
+        $request_params['appid'] = $this->params['appid'];
+        $request_params['mch_id'] = $this->params['mch_id'];
+        $request_params['sign_type'] = 'MD5';
+        $request_params['nonce_str'] = $this->utils->createNoncestr();
+        $request_params['sign'] = $this->createSign($request_params);
+        $xml = $this->utils->arrayToXml($this->params);
+        $http = new Client();
+        $response = $http->post($this->refund_query_url, [
             'body' => $xml
         ]);
         $result = $this->utils->xmlToArray($response->getbody());

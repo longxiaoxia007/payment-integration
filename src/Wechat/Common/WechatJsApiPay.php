@@ -12,7 +12,7 @@ namespace PaymentIntegration\Wechat\Common;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Wechat\WechatMultiplePay;
 
-class WechatJsApiPay extends WechatMultiplePay
+final class WechatJsApiPay extends WechatMultiplePay
 {
     public function __construct()
     {
@@ -24,7 +24,7 @@ class WechatJsApiPay extends WechatMultiplePay
      * @throws MultiplePayException
      * 支付
      */
-    public function doPay($is_direct = false)
+    public function doPay($is_direct = true)
     {
         $request_data = $this->payRequest($this->trade_type);
         if(!isset($request_data['prepay_id']) || empty($request_data['prepay_id'])) throw new MultiplePayException('支付标识缺失');
@@ -64,15 +64,24 @@ class WechatJsApiPay extends WechatMultiplePay
     {
         return $this->orderQueryRequest($this->trade_type);
     }
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 退款查询
+     */
+    public function doRefundQuery()
+    {
+        return $this->refundQueryRequest($this->trade_type);
+    }
 
     /**
-     * @param $payment_id
      * @param $data
      * @return string
-     *
+     * @throws MultiplePayException
      */
     private function getHtml($data)
     {
+        if(empty($this->return_url)) throw new MultiplePayException('没有设定同步跳转地址');
         header("Content-Type: text/html;charset=UTF-8");
         $strHtml = '
                 <html>

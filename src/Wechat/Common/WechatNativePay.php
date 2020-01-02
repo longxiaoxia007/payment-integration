@@ -12,7 +12,7 @@ namespace PaymentIntegration\Wechat\Common;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Wechat\WechatMultiplePay;
 
-class WechatNativePay extends WechatMultiplePay
+final class WechatNativePay extends WechatMultiplePay
 {
     public function __construct()
     {
@@ -28,7 +28,8 @@ class WechatNativePay extends WechatMultiplePay
     {
         $request_data = $this->payRequest($this->trade_type);
         if(empty($request_data['code_url'])) throw new MultiplePayException('二维码链接缺失');
-        return $request_data['code_url'];
+        $result = $this->shortUrlRequest($request_data['code_url']);
+        return ['short_url' => $result['short_url']];
     }
 
     /**
@@ -49,5 +50,15 @@ class WechatNativePay extends WechatMultiplePay
     public function doOrderQuery()
     {
         return $this->orderQueryRequest($this->trade_type);
+    }
+
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 退款查询
+     */
+    public function doRefundQuery()
+    {
+        return $this->refundQueryRequest($this->trade_type);
     }
 }

@@ -12,7 +12,7 @@ namespace PaymentIntegration\Wechat\Common;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Wechat\WechatMultipleServicePay;
 
-class WechatMiniServicePay extends WechatMultipleServicePay
+final class WechatMiniServicePay extends WechatMultipleServicePay
 {
     public function __construct()
     {
@@ -31,7 +31,7 @@ class WechatMiniServicePay extends WechatMultipleServicePay
         $prepay_id = $request_data['prepay_id'];
 
         $sign_array = [
-            'appId' => $request_data['appid'],
+            'appId' => $request_data['sub_appid'],
             'timeStamp' => strval(time()),
             'nonceStr' => $this->utils->createNoncestr(),
             'package' => 'prepay_id=' . $prepay_id,
@@ -60,5 +60,14 @@ class WechatMiniServicePay extends WechatMultipleServicePay
     public function doOrderQuery()
     {
         return $this->orderQueryRequest($this->trade_type);
+    }
+    /**
+     * @return mixed
+     * @throws MultiplePayException
+     * 退款查询
+     */
+    public function doRefundQuery()
+    {
+        return $this->refundQueryRequest($this->trade_type);
     }
 }

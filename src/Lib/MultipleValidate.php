@@ -32,6 +32,12 @@ class MultipleValidate
                     'APP' => ['appid', 'mch_id', 'out_trade_no|transaction_id'],
                     'MWEB' => ['appid', 'mch_id', 'out_trade_no|transaction_id']
                 ],
+                'query_refund' => [
+                    'JSAPI' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id'],
+                    'NATIVE' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id'],
+                    'APP' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id'],
+                    'MWEB' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id']
+                ]
             ],
             'service' => [
                 'pay' => [
@@ -52,6 +58,12 @@ class MultipleValidate
                     'APP' => ['appid', 'mch_id',  'sub_mch_id', 'out_trade_no|transaction_id'],
                     'MWEB' => ['appid', 'mch_id',  'sub_mch_id', 'out_trade_no|transaction_id']
                 ],
+                'query_refund' => [
+                    'JSAPI' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id'],
+                    'NATIVE' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id'],
+                    'APP' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id'],
+                    'MWEB' => ['appid', 'mch_id', 'out_trade_no|transaction_id|out_refund_no|refund_id']
+                ]
             ]
         ],
 
@@ -66,10 +78,10 @@ class MultipleValidate
      * @throws MultiplePayException
      * 检查传入的参数
      */
-    public static function check($pay_way, $action_type, $trade_type, $data)
+    public static function check($pay_way, $action_type, $pay_model, $trade_type, $data)
     {
-        if(!isset(self::$params[$pay_way][$action_type][$trade_type]) || empty(self::$params[$pay_way][$action_type][$trade_type])) throw new MultiplePayException('没有此种交易方式');
-        $trade_type_params = self::$params[$pay_way][$action_type][$trade_type];
+        if(!isset(self::$params[$pay_way][$pay_model][$action_type][$trade_type]) || empty(self::$params[$pay_way][$pay_model][$action_type][$trade_type])) throw new MultiplePayException('没有此种交易方式');
+        $trade_type_params = self::$params[$pay_way][$pay_model][$action_type][$trade_type];
         foreach($trade_type_params as $typ) {
             if(strpos($typ, '&') !== FALSE) {
                 $temp = explode('&', $typ);
