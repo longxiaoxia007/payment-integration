@@ -15,10 +15,10 @@ class MultipleValidate
         'wechat' => [
             'common' => [
                 'pay' => [
-                    'JSAPI' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip', 'openid'],
-                    'NATIVE' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip',  'product_id'],
-                    'APP' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip'],
-                    'MWEB' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip',  'scene_info']
+                    'JSAPI' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'spbill_create_ip', 'openid'],
+                    'NATIVE' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'spbill_create_ip',  'product_id'],
+                    'APP' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'spbill_create_ip'],
+                    'MWEB' => ['appid', 'mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'spbill_create_ip',  'scene_info']
                 ],
                 'refund' => [
                     'JSAPI' => ['appid', 'mch_id', 'out_trade_no|transaction_id', 'out_refund_no', 'total_fee', 'refund_fee'],
@@ -41,7 +41,7 @@ class MultipleValidate
             ],
             'service' => [
                 'pay' => [
-                    'JSAPI' => ['appid', 'mch_id', 'sub_mch_id&sub_openid', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip', 'openid'],
+                    'JSAPI' => ['appid', 'mch_id', 'openid|sub_mch_id&sub_openid', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip'],
                     'NATIVE' => ['appid', 'mch_id', 'sub_mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip',  'product_id'],
                     'APP' => ['appid', 'mch_id', 'sub_mch_id', 'sub_appid', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip'],
                     'MWEB' => ['appid', 'mch_id', 'sub_mch_id', 'body', 'out_trade_no', 'total_fee', 'notify_url', 'trade_type', 'spbill_create_ip', 'scene_info']
@@ -83,32 +83,33 @@ class MultipleValidate
         if(!isset(self::$params[$pay_way][$pay_model][$action_type][$trade_type]) || empty(self::$params[$pay_way][$pay_model][$action_type][$trade_type])) throw new MultiplePayException('没有此种交易方式');
         $trade_type_params = self::$params[$pay_way][$pay_model][$action_type][$trade_type];
         foreach($trade_type_params as $typ) {
-            if(strpos($typ, '&') !== FALSE) {
-                $temp = explode('&', $typ);
-                $has_all = true;
-                foreach($temp as $t) {
-                    if(!array_key_exists($t, $data)) {
-                        $has_all = false;
-                        continue;
-                    }
-                }
-                if(!$has_all) throw new MultiplePayException('参数' . $typ . '缺一不可');
-            } else if(strpos($typ, '|') !== FALSE) {
+            if(strpos($typ, '|') !== FALSE) {
                 $temp = explode('|', $typ);
                 $has_one = false;
                 foreach($temp as $t) {
-                    if(array_key_exists($t, $data)) {
-                        $has_one = true;
-                        continue;
+                    if(strpos($t, '&') !== FALSE) {
+                        $has_all = true;
+                        $temp_t = explode('&', $t);
+                        foreach($temp_t as $tt) {
+                            if(!array_key_exists($tt, $data)) {
+                                $has_all = false;
+                                continue;
+                            }
+                        }
+                        $has_one = $has_all;
+                    } else {
+                        if(array_key_exists($t, $data)) {
+                            $has_one = true;
+                        }
                     }
+                    if($has_one) continue;
                 }
-                if(!$has_one) throw new MultiplePayException('参数' . $typ . '最少要有一个');
+                if(!$has_one) throw new MultiplePayException('参数' . $typ . '最少要有一个满足');
             } else {
                 if(!array_key_exists($typ, $data) || empty($data[$typ])) {
                     throw new MultiplePayException('参数' . $typ . '缺失');
                 }
             }
-
         }
         return true;
     }

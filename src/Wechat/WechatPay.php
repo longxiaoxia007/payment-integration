@@ -9,6 +9,11 @@
 namespace PaymentIntegration\Wechat;
 
 use GuzzleHttp\Client;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use PaymentIntegration\Lib\Log;
+use PaymentIntegration\Lib\LogWriter;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Lib\Utils;
 use PaymentIntegration\Lib\MultipleValidate;
@@ -78,6 +83,24 @@ class WechatPay
         $this->refund_url = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
         $this->refund_query_url = 'https://api.mch.weixin.qq.com/pay/refundquery';
         $this->utils = new Utils();
+        $log_path = dirname($_SERVER['DOCUMENT_ROOT']).'/payment-integration.txt';
+        Log::useDailyFiles($log_path);
+    }
+
+    /**
+     * @param $path
+     */
+    public function setLogPath($path)
+    {
+        Log::useDailyFiles($path);
+    }
+
+    /**
+     * 关闭日志
+     */
+    public function closeLogSwitch()
+    {
+        Log::closeLogSwitch();
     }
 
     /**
@@ -146,13 +169,14 @@ class WechatPay
         MultipleValidate::check('wechat', 'pay', $this->pay_model, $trade_type, $this->params);
         $this->setMustParams();
         $this->params['sign'] = $this->createSign($this->params);
-
+        Log::info('微信支付（'.$trade_type.'）请求前的信息：'.var_export($this->params, 1));
         $xml = $this->utils->arrayToXml($this->params);
         $http = new Client();
         $response = $http->post($this->unifiedorder_url, [
             'body' => $xml
         ]);
         $result = $this->utils->xmlToArray($response->getbody());
+        Log::info('微信支付（'.$trade_type.'）响应解码后的信息：'.var_export($result, 1));
         if ($result['return_code'] !== 'SUCCESS') {
             throw new MultiplePayException($result['return_msg']);
         }
@@ -170,15 +194,17 @@ class WechatPay
     public function payCallBack()
     {
         $back_str = file_get_contents("php://input");
-        $back_array = $this->utils->xmlToArray($back_str);
-        if ($back_array['return_code'] != 'SUCCESS') {
-            throw new MultiplePayException('返回结果不正确:' . $back_array['return_msg']);
+        $notify_data = $this->utils->xmlToArray($back_str);
+        Log::info('微信支付（'.$this->trade_type.'）异步回调接收的参数：'.var_export($notify_data, 1));
+        if ($notify_data['return_code'] != 'SUCCESS') {
+            throw new MultiplePayException('返回结果不正确:' . $notify_data['return_msg']);
         }
-        $call_back_sign = $this->createSign($back_array);
-        if ($call_back_sign != $back_array['sign']) {
+        $call_back_sign = $this->createSign($notify_data);
+        if ($call_back_sign != $notify_data['sign']) {
+            Log::info('微信支付（'.$this->trade_type.'）异步回调签名验证不通过');
             throw new MultiplePayException('签名验证不通过');
         }
-        return $back_array;
+        return $notify_data;
     }
 
     /**
@@ -191,13 +217,14 @@ class WechatPay
         MultipleValidate::check('wechat', 'query_order',  $this->pay_model, $trade_type, $this->params);
         $this->setMustParams();
         $this->params['sign'] = $this->createSign($this->params);
-
+        Log::info('微信查询订单（'.$trade_type.'）请求前的信息：'.var_export($this->params, 1));
         $xml = $this->utils->arrayToXml($this->params);
         $http = new Client();
         $response = $http->post($this->order_query_url, [
             'body' => $xml
         ]);
         $result = $this->utils->xmlToArray($response->getbody());
+        Log::info('微信查询订单（'.$trade_type.'）响应解码后的信息：'.var_export($result, 1));
         if ($result['return_code'] !== 'SUCCESS') {
             throw new MultiplePayException($result['return_msg']);
         }
@@ -221,6 +248,7 @@ class WechatPay
         MultipleValidate::check('wechat', 'refund',  $this->pay_model, $trade_type, $this->params);
         $this->setMustParams();
         $this->params['sign'] = $this->createSign($this->params);
+        Log::info('微信申请退款（'.$trade_type.'）请求前的信息：'.var_export($this->params, 1));
 
         $xml = $this->utils->arrayToXml($this->params);
         $http = new Client();
@@ -231,6 +259,7 @@ class WechatPay
             'body' => $xml
         ]);
         $result = $this->utils->xmlToArray($response->getbody());
+        Log::info('微信申请退款（'.$trade_type.'）响应解码后的信息：'.var_export($result, 1));
         if ($result['return_code'] !== 'SUCCESS') {
             throw new MultiplePayException($result['return_msg']);
         }
@@ -250,13 +279,14 @@ class WechatPay
         MultipleValidate::check('wechat', 'query_refund',  $this->pay_model, $trade_type, $this->params);
         $this->setMustParams();
         $this->params['sign'] = $this->createSign($this->params);
-
+        Log::info('微信退款查询（'.$trade_type.'）请求前的信息：'.var_export($this->params, 1));
         $xml = $this->utils->arrayToXml($this->params);
         $http = new Client();
         $response = $http->post($this->refund_query_url, [
             'body' => $xml
         ]);
         $result = $this->utils->xmlToArray($response->getbody());
+        Log::info('微信退款查询（'.$trade_type.'）响应解码后的信息：'.var_export($result, 1));
         if ($result['return_code'] !== 'SUCCESS') {
             throw new MultiplePayException($result['return_msg']);
         }
@@ -302,10 +332,12 @@ class WechatPay
     {
         $back_str = file_get_contents("php://input");
         $refund_notify_info = $this->utils->xmlToArray($back_str);
+        Log::info('微信退款（'.$this->trade_type.'）异步回调接收的参数：'.var_export($refund_notify_info, 1));
         $req_info = $refund_notify_info['req_info'];
         // 对加密信息进行解密,需要用到商户秘钥
         $req_info_xml = openssl_decrypt(base64_decode($req_info), 'aes-256-ecb', md5($this->key), OPENSSL_RAW_DATA);
         $req_info_data = $this->utils->xmlToArray($req_info_xml);
+        Log::info('微信退款（'.$this->trade_type.'）异步回调解密的参数：'.var_export($req_info_data, 1));
         return $req_info_data;
     }
 
