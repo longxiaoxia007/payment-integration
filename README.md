@@ -1,6 +1,7 @@
 # payment-integration
 支付集成包
-
+#安装
+composer require payment-integration
 # 使用教程
 ## 简介
 ###1.目前微信支持的支付有公众号支付，H5支付， 扫码支付，小程序支付和App支付五种支付方式，支付宝支付将在后续版本中添加；
