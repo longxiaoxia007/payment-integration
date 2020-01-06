@@ -83,7 +83,7 @@ class WechatPay
         $this->refund_url = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
         $this->refund_query_url = 'https://api.mch.weixin.qq.com/pay/refundquery';
         $this->utils = new Utils();
-        $log_path = dirname($_SERVER['DOCUMENT_ROOT']).'/payment-integration.txt';
+        $log_path = $_SERVER['DOCUMENT_ROOT'].'/payment-integration.txt';
         Log::useDailyFiles($log_path);
     }
 
@@ -199,6 +199,7 @@ class WechatPay
         if ($notify_data['return_code'] != 'SUCCESS') {
             throw new MultiplePayException('返回结果不正确:' . $notify_data['return_msg']);
         }
+
         $call_back_sign = $this->createSign($notify_data);
         if ($call_back_sign != $notify_data['sign']) {
             Log::info('微信支付（'.$this->trade_type.'）异步回调签名验证不通过');
