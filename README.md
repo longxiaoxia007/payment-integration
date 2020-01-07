@@ -99,6 +99,8 @@ $PayObject->setKey('sfsfsddfgs2343453534gdfgdfsgdfg');
 ##### 返回官方原样参数
 ```php
 $return_data = $PayObject->payCallBack();
+//逻辑处理完成后请务必调用retResult方法返回结果给微信
+$PayObject->retResult();
 ```
 #### 查询订单部分
 ##### 实例化公众号支付类
@@ -129,6 +131,7 @@ $PayObject->setParam('mch_id', '10000100');
 $PayObject->setParam('out_refund_no', '1415701182');
 $PayObject->setParam('out_trade_no', '1415757673');
 $PayObject->setParam('refund_fee', 1);
+$PayObject->setParam('total_fee', 1);
 $PayObject->setParam('transaction_id', '4006252001201705123297353072');
 
 $PayObject->setKey('sfsfsddfgs2343453534gdfgdfsgdfg');
@@ -152,6 +155,8 @@ $PayObject->setKey('sfsfsddfgs2343453534gdfgdfsgdfg');
 ##### 返回官方原样参数
 ```php
 $return_data = $PayObject->refundCallBack();
+//逻辑处理完成后请务必调用retResult方法返回结果给微信
+$PayObject->retResult();
 ```
 ###### **********************************************************************************************/
 #### 退款查询部分

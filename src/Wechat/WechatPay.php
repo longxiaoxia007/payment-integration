@@ -155,7 +155,6 @@ class WechatPay
     protected function setMustParams()
     {
         $this->params['sign_type'] = 'MD5';
-        $this->params['trade_type'] = $this->trade_type;
         $this->params['nonce_str'] = $this->utils->createNoncestr();
     }
 
@@ -168,6 +167,7 @@ class WechatPay
     {
         MultipleValidate::check('wechat', 'pay', $this->pay_model, $trade_type, $this->params);
         $this->setMustParams();
+        $this->params['trade_type'] = $this->trade_type;
         $this->params['sign'] = $this->createSign($this->params);
         Log::info('微信支付（'.$trade_type.'）请求前的信息：'.var_export($this->params, 1));
         $xml = $this->utils->arrayToXml($this->params);
@@ -360,5 +360,15 @@ class WechatPay
         $string = md5($string); //签名步骤三：MD5加密
         $result = strtoupper($string); //签名步骤四：所有字符转为大写
         return $result;
+    }
+
+    /**
+     * 返回给微信成功的信息
+     */
+    protected function retResult()
+    {
+        $ret = array('return_code'=>'SUCCESS', 'return_msg'=>'OK');
+        $ret = $this->utils->arrayToXml($ret);
+        echo $ret;exit;
     }
 }
