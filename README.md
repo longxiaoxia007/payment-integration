@@ -3,6 +3,7 @@
 # 安装
 ```php
 composer require payment-integration/payment-integration
+composer require "payment-integration/payment-integration @dev"
 ```
 # 使用教程
 ## 简介
