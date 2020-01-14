@@ -2,7 +2,7 @@
 支付集成包
 # 安装
 ```php
-composer require payment-integration
+composer require payment-integration/payment-integration
 ```
 # 使用教程
 ## 简介

@@ -1,5 +1,5 @@
 {
-    "name": "payment-integration",
+    "name": "payment-integration/payment-integration",
     "description": "a payment integration package",
     "type": "library",
     "license": "MIT",
