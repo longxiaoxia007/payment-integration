@@ -123,7 +123,7 @@ class WechatPay
     }
 
     /**
-     * @param $return_url
+     * @param $cert_path
      * 设置同步通知地址
      */
     public function setRefundCertPath($cert_path)
@@ -132,7 +132,7 @@ class WechatPay
     }
 
     /**
-     * @param $return_url
+     * @param $key_path
      * 设置同步通知地址
      */
     public function setRefundKyePath($key_path)
