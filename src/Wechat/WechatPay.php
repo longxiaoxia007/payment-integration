@@ -83,8 +83,8 @@ class WechatPay
         $this->refund_url = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
         $this->refund_query_url = 'https://api.mch.weixin.qq.com/pay/refundquery';
         $this->utils = new Utils();
-        $log_path = $_SERVER['DOCUMENT_ROOT'].'/payment-integration.txt';
-        Log::useDailyFiles($log_path);
+//        $log_path = $_SERVER['DOCUMENT_ROOT'].'/payment-integration.txt';
+//        Log::useDailyFiles($log_path);
     }
 
     /**
@@ -365,7 +365,7 @@ class WechatPay
     /**
      * 返回给微信成功的信息
      */
-    protected function retResult()
+    public function retResult()
     {
         $ret = array('return_code'=>'SUCCESS', 'return_msg'=>'OK');
         $ret = $this->utils->arrayToXml($ret);
