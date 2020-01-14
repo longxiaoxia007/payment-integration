@@ -39,8 +39,8 @@ class Example
 //            $PayObject = new WechatMiniPay();//小程序支付
 //            $PayObject = new WechatNativePay();//扫码支付
             //2.以下设置支付参数（以公众号支付的必选参数为例，其他支付参阅官方文档）
-            $PayObject->setLogPath('path/log.txt');//通过此参数设置日志记录路径，如果不设置 会默认在项目根目录下
-            $PayObject->closeLogSwitch();//此参数可关闭日志记录，默认为打开状态
+            $PayObject->setLogPath('path/log.txt');//通过此参数设置日志记录路径
+            $PayObject->openLogSwitch();//此参数可打开日志记录，默认为关闭状态
             $PayObject->setParam('appid', 'wx2421b1c4370ec43b');
             $PayObject->setParam('mch_id', '10000100');
             $PayObject->setParam('openid', 'oUpF8uMuAJO_M2pxb1Q9zNjWeS6o');

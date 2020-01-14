@@ -11,7 +11,7 @@ composer require payment-integration
 #### 3.不同的支付实例化对应的支付类，何种支付一目了然，不需要设定过多参数，避免犯错误；
 #### 4.所有支付的过程为：1.实例化支付类；2.按照微信官方的要求进行参数设定；3.支付则调用类中的doPay方法，查询订单调用doOrderQuery，退款调用doRefund，退款查询用doRefundQuery；
 #### 5.所有支付参数中的sign_type（默认MD5）,trade_type,nonce_str不需要传递，内部已经自动处理，必传参数内部会进行验证; 
-#### 6.为便于调试，内置了基于monolog的日志记录，可用setLogPath方法设置日志路径(务必保证目录有写入权限)，同时可用closeLogSwitch方法关闭日志，具体请根据需求自定义设置；
+#### 6.为便于调试，内置了基于monolog的日志记录，日志默认为关闭，需要先用setLogPath方法设置日志路径(务必保证目录有写入权限)，然后用openLogSwitch方法打开日志，具体请根据需求自定义设置；
 #### 7.所有错误均以异常的形式抛出，请在实际逻辑中自行处理异常;
 #### 8.使用过程中发现问题，欢迎批评指正，QQ：421718630。
 
@@ -29,8 +29,8 @@ $PayObject = new WechatJsApiPay();//公众号支付
 ```
 ##### 以下设置支付参数（以公众号支付的必选参数为例，其他支付参阅官方文档）
 ```php
-$PayObject->setLogPath('path/log.txt');//通过此参数设置日志记录路径，如果不设置 会默认在项目根目录下
-$PayObject->closeLogSwitch();//此参数可关闭日志记录，默认为打开状态
+$PayObject->setLogPath('path/log.txt');//通过此参数设置日志记录路径
+$PayObject->openLogSwitch();//此参数可打开日志记录，默认为关闭状态
 $PayObject->setParam('appid', 'wx2421b1c4370ec43b');
 $PayObject->setParam('mch_id', '10000100');
 $PayObject->setParam('openid', 'oUpF8uMuAJO_M2pxb1Q9zNjWeS6o');

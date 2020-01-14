@@ -28,7 +28,7 @@ class LogWriter
         'emergency' => MonologLogger::EMERGENCY,
     ];
 
-    protected $switch = true;
+    protected $switch = false;
     /**
      * Writer constructor.
      */
@@ -40,9 +40,9 @@ class LogWriter
     /**
      * 关闭日志
      */
-    public function closeLogSwitch()
+    public function openLogSwitch()
     {
-        $this->switch = false;
+        $this->switch = true;
     }
 
     /**

@@ -75,6 +75,11 @@ class WechatPay
      * 支付模式
      */
     protected $pay_model;
+    /**
+     * @var
+     * 日志路径
+     */
+    protected $log_path = null;
 
     public function __construct()
     {
@@ -92,15 +97,17 @@ class WechatPay
      */
     public function setLogPath($path)
     {
+        $this->log_path = $path;
         Log::useDailyFiles($path);
     }
 
     /**
      * 关闭日志
      */
-    public function closeLogSwitch()
+    public function openLogSwitch()
     {
-        Log::closeLogSwitch();
+        if(is_null($this->log_path)) throw new \Exception('请先设置好日志路径再打开日志！');
+        Log::openLogSwitch();
     }
 
     /**
