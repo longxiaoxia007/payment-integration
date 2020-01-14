@@ -51,4 +51,37 @@ class Utils
         }
         return $str;
     }
+
+    /**
+     * @param $value
+     * @return bool
+     * 检查是否为空
+     */
+    public function checkEmpty($value)
+    {
+        if (!isset($value))
+            return true;
+        if ($value === null)
+            return true;
+        if (trim($value) === "")
+            return true;
+        return false;
+    }
+
+    /**
+     * 转换字符集编码
+     * @param $data
+     * @param $targetCharset
+     * @return string
+     */
+    public function characet($data, $target_charset)
+    {
+        if (!empty($data)) {
+            $file_type = "UTF-8";
+            if (strcasecmp($file_type, $target_charset) != 0) {
+                $data = mb_convert_encoding($data, $target_charset, $file_type);
+            }
+        }
+        return $data;
+    }
 }

@@ -6,19 +6,15 @@
  * Time: 15:21
  */
 
-namespace PaymentIntegration\Wechat;
+namespace PaymentIntegration\Alipay;
 
 use GuzzleHttp\Client;
-use Monolog\Handler\RotatingFileHandler;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use PaymentIntegration\Lib\Log;
-use PaymentIntegration\Lib\LogWriter;
 use PaymentIntegration\Lib\MultiplePayException;
 use PaymentIntegration\Lib\Utils;
 use PaymentIntegration\Lib\MultipleValidate;
 
-class WechatPay
+class AliMultiplePay
 {
     /**
      * @var
@@ -83,10 +79,10 @@ class WechatPay
 
     public function __construct()
     {
-        $this->unifiedorder_url = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
-        $this->order_query_url = 'https://api.mch.weixin.qq.com/pay/orderquery';
-        $this->refund_url = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
-        $this->refund_query_url = 'https://api.mch.weixin.qq.com/pay/refundquery';
+        $this->unifiedorder_url = 'https://openapi.alipay.com/gateway.do';
+        $this->order_query_url = 'https://openapi.alipay.com/gateway.do';
+        $this->refund_url = 'https://openapi.alipay.com/gateway.do';
+        $this->refund_query_url = 'https://openapi.alipay.com/gateway.do';
         $this->utils = new Utils();
     }
 
@@ -116,6 +112,16 @@ class WechatPay
     public function setParam($param, $value)
     {
         $this->params[$param] = $value;
+    }
+
+    /**
+     * @param $biz_content
+     * @return string
+     * 获取处理后的请求参数
+     */
+    public function getBizContent($biz_content)
+    {
+        return json_encode($biz_content,JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -159,8 +165,8 @@ class WechatPay
      */
     protected function setMustParams()
     {
-        $this->params['sign_type'] = 'MD5';
-        $this->params['nonce_str'] = $this->utils->createNoncestr();
+        $this->params['sign_type'] = 'RSA2';
+        $this->params['timestamp'] = date('Y-m-d H:i:s',time());
     }
 
     /**
@@ -172,9 +178,9 @@ class WechatPay
     {
         MultipleValidate::check('wechat', 'pay', $this->pay_model, $this->trade_type, $this->params);
         $this->setMustParams();
-        $this->params['trade_type'] = $this->trade_type;
+        $this->params['method'] = $this->trade_type;
         $this->params['sign'] = $this->createSign($this->params);
-        Log::info('微信支付（'.$this->trade_type.'）请求前的信息：'.var_export($this->params, 1));
+        Log::info('支付宝支付接口（'.$this->trade_type.'）请求前的信息：'.var_export($this->params, 1));
         $xml = $this->utils->arrayToXml($this->params);
         $http = new Client();
         $response = $http->post($this->unifiedorder_url, [
@@ -353,18 +359,39 @@ class WechatPay
      */
     protected function createSign($params)
     {
-        ksort($params); //签名步骤一：按字典序排序参数
-        $buff = "";
+        $rsa_str = $this->getHandleString($params);
+        $res = "-----BEGIN RSA PRIVATE KEY-----\n" .
+            wordwrap($this->key, 64, "\n", true) .
+            "\n-----END RSA PRIVATE KEY-----";
+        openssl_sign($rsa_str, $sign, $res, OPENSSL_ALGO_SHA256);
+        $sign = base64_encode($sign);
+        return $sign;
+    }
+
+    /**
+     * 获取签名字符串
+     * @param mixed $form 包含签名数据的数组
+     * @access private
+     * @return string
+     */
+    protected function getHandleString($params)
+    {
+        ksort($params);
+        $string_to_be_signed = "";
+        $i = 0;
         foreach ($params as $k => $v) {
-            if ($k != "sign" && $v != "" && !is_array($v)) {
-                $buff .= $k . "=" . $v . "&";
+            if (false === $this->utils->checkEmpty($v) && "@" != substr($v, 0, 1)) {
+                $v = $this->utils->characet($v, 'UTF-8');
+                if ($i == 0) {
+                    $string_to_be_signed .= "$k" . "=" . "$v";
+                } else {
+                    $string_to_be_signed .= "&" . "$k" . "=" . "$v";
+                }
+                $i++;
             }
         }
-        $string = trim($buff, "&");
-        $string = $string . "&key=" . $this->key; //签名步骤二：在string后加入KEY
-        $string = md5($string); //签名步骤三：MD5加密
-        $result = strtoupper($string); //签名步骤四：所有字符转为大写
-        return $result;
+        unset ($k, $v);
+        return $string_to_be_signed;
     }
 
     /**

@@ -26,7 +26,7 @@ final class WechatNativePay extends WechatMultiplePay
      */
     public function doPay()
     {
-        $request_data = $this->payRequest($this->trade_type);
+        $request_data = $this->payRequest();
         if(empty($request_data['code_url'])) throw new MultiplePayException('二维码链接缺失');
         $result = $this->shortUrlRequest($request_data['code_url']);
         return ['short_url' => $result['short_url']];
@@ -39,7 +39,7 @@ final class WechatNativePay extends WechatMultiplePay
      */
     public function doRefund()
     {
-        return $this->refundRequest($this->trade_type);
+        return $this->refundRequest();
     }
 
     /**
@@ -49,7 +49,7 @@ final class WechatNativePay extends WechatMultiplePay
      */
     public function doOrderQuery()
     {
-        return $this->orderQueryRequest($this->trade_type);
+        return $this->orderQueryRequest();
     }
 
     /**
@@ -59,6 +59,6 @@ final class WechatNativePay extends WechatMultiplePay
      */
     public function doRefundQuery()
     {
-        return $this->refundQueryRequest($this->trade_type);
+        return $this->refundQueryRequest();
     }
 }

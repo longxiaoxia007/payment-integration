@@ -26,7 +26,7 @@ final class WechatMiniServicePay extends WechatMultipleServicePay
      */
     public function doPay()
     {
-        $request_data = $this->payRequest($this->trade_type);
+        $request_data = $this->payRequest();
         if(!isset($request_data['prepay_id']) || empty($request_data['prepay_id'])) throw new MultiplePayException('支付标识缺失');
         $prepay_id = $request_data['prepay_id'];
 
@@ -49,7 +49,7 @@ final class WechatMiniServicePay extends WechatMultipleServicePay
      */
     public function doRefund()
     {
-        return $this->refundRequest($this->trade_type);
+        return $this->refundRequest();
     }
 
     /**
@@ -59,7 +59,7 @@ final class WechatMiniServicePay extends WechatMultipleServicePay
      */
     public function doOrderQuery()
     {
-        return $this->orderQueryRequest($this->trade_type);
+        return $this->orderQueryRequest();
     }
     /**
      * @return mixed
@@ -68,6 +68,6 @@ final class WechatMiniServicePay extends WechatMultipleServicePay
      */
     public function doRefundQuery()
     {
-        return $this->refundQueryRequest($this->trade_type);
+        return $this->refundQueryRequest();
     }
 }

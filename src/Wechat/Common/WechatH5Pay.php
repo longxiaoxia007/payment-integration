@@ -26,7 +26,7 @@ final class WechatH5Pay extends WechatMultiplePay
      */
     public function doPay()
     {
-        $request_data = $this->payRequest($this->trade_type);
+        $request_data = $this->payRequest();
         if(empty($request_data['mweb_url'])) throw new MultiplePayException('支付跳转链接缺失');
         return ['mweb_url' => $request_data['mweb_url']];
     }
@@ -38,7 +38,7 @@ final class WechatH5Pay extends WechatMultiplePay
      */
     public function doRefund()
     {
-        return $this->refundRequest($this->trade_type);
+        return $this->refundRequest();
     }
 
     /**
@@ -48,7 +48,7 @@ final class WechatH5Pay extends WechatMultiplePay
      */
     public function doOrderQuery()
     {
-        return $this->orderQueryRequest($this->trade_type);
+        return $this->orderQueryRequest();
     }
     /**
      * @return mixed
@@ -57,6 +57,6 @@ final class WechatH5Pay extends WechatMultiplePay
      */
     public function doRefundQuery()
     {
-        return $this->refundQueryRequest($this->trade_type);
+        return $this->refundQueryRequest();
     }
 }
